@@ -69,8 +69,20 @@
         params.cb(this);
         return this;
       },
+      chkIdle: function(time) {
+        var actor, dt, speed, _act, _animaTime, _curr_st, _cycle_time, _life_cycle;
+        actor = this;
+        _curr_st = actor.get("curr_st");
+        _act = actor.get("acts")[_curr_st];
+        _animaTime = actor.get("animaTime");
+        _life_cycle = _act.get("life_cycle");
+        _cycle_time = _life_cycle * _act.get("count");
+        speed = _act.get("speed");
+        dt = time - _animaTime - _cycle_time;
+        return !!(dt % speed) || !_animaTime;
+      },
       tick: function(time) {
-        var actor, canvas, dt, isInRect, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle;
+        var actor, canvas, dt, isInRect, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle;
         actor = this;
         _curr_st = this.get("curr_st");
         _act = this.get("acts")[_curr_st];
@@ -79,6 +91,7 @@
         _animaTime = this.get("animaTime");
         _life_cycle = _act.get("life_cycle");
         _cycle_time = _life_cycle * _act.get("count");
+        speed = _act.get("speed");
         !~~_animaFlag && _animaTime >= 0 && (_animaTime = time + _act_start_time, actor.set({
           "animaFlag": true,
           "animaTime": _animaTime
@@ -88,28 +101,34 @@
           actor: actor
         }));
         if (_animaFlag && time >= _animaTime) {
-          canvas = actor.get("canvas");
-          isInRect = E_PAINT.chkInRect({
-            cw: canvas.width,
-            ch: canvas.height,
-            x: actor.get("x"),
-            y: actor.get("y"),
-            w: actor.get("w"),
-            h: actor.get("h")
-          });
           dt = time - _animaTime - _cycle_time;
-          if (dt > 0 && dt < _life_cycle && isInRect) {
-            _act.trigger("during", {
-              e: "during",
-              dt: dt,
-              actor: actor
+          if (!(dt % speed)) {
+            canvas = actor.get("canvas");
+            isInRect = E_PAINT.chkInRect({
+              cw: canvas.width,
+              ch: canvas.height,
+              x: actor.get("x"),
+              y: actor.get("y"),
+              w: actor.get("w"),
+              h: actor.get("h")
             });
+            if (dt > 0 && dt < _life_cycle && isInRect) {
+              _act.trigger("during", {
+                e: "during",
+                dt: dt,
+                actor: actor
+              });
+            } else {
+              _act.trigger("finish", {
+                e: "finish",
+                dt: dt,
+                actor: actor,
+                isInRect: isInRect
+              });
+            }
           } else {
-            _act.trigger("finish", {
-              e: "finish",
-              dt: dt,
-              actor: actor,
-              isInRect: isInRect
+            _act.idle({
+              actor: actor
             });
           }
         }
@@ -120,14 +139,16 @@
         x = params.x || this.get("x");
         y = params.y || this.get("y");
         img = params.img;
-        E_PAINT.update({
-          x: x,
-          y: y,
-          w: this.get("w"),
-          h: this.get("h"),
-          ctx: this.get("ctx"),
-          img: img
-        });
+        if (img != null) {
+          E_PAINT.update({
+            x: x,
+            y: y,
+            w: this.get("w"),
+            h: this.get("h"),
+            ctx: this.get("ctx"),
+            img: img
+          });
+        }
         return this;
       }
     });

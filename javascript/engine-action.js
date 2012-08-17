@@ -128,7 +128,7 @@
         _IMG_INF = IMG_INF;
         actor = params.actor;
         img_id = params.img_id;
-        _img = act.get_img({
+        _img = this.get_img({
           img_inf: _IMG_INF,
           actor_id: actor.get("id"),
           img_id: img_id
@@ -143,7 +143,8 @@
         actor = params.actor;
         cache = this.get("cache");
         this.show_img({
-          img_id: cache.img_id
+          img_id: cache.img_id,
+          actor: actor
         });
         return this;
       }
