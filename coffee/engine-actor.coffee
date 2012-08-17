@@ -62,6 +62,16 @@ define([
             _act.set(params)
             params.cb(@)
             @
+        chkIdle: (time) ->
+            actor = @
+            _curr_st = actor.get("curr_st")
+            _act = actor.get("acts")[_curr_st]
+            _animaTime = actor.get("animaTime")
+            _life_cycle = _act.get("life_cycle")
+            _cycle_time = _life_cycle * _act.get("count")
+            speed = _act.get("speed")
+            dt = time - _animaTime - _cycle_time
+            !!(dt%speed) || !_animaTime
         tick: (time) ->
             #console.log("--------------- tick ---------------")
             actor = @
@@ -73,6 +83,7 @@ define([
             _animaTime = @get("animaTime")
             _life_cycle = _act.get("life_cycle")
             _cycle_time = _life_cycle * _act.get("count")
+            speed = _act.get("speed")
             #console.log _act
             # act at this time
             #console.log arguments
@@ -91,29 +102,34 @@ define([
                 })
             ))
             if (_animaFlag && time >= _animaTime)
-                canvas = actor.get("canvas")
-                isInRect = E_PAINT.chkInRect({
-                    cw: canvas.width
-                    ch: canvas.height
-                    x: actor.get("x")
-                    y: actor.get("y")
-                    w: actor.get("w")
-                    h: actor.get("h")
-                })
                 dt = time - _animaTime - _cycle_time
-                if (dt > 0 && dt < _life_cycle && isInRect)
-                    _act.trigger("during", {
-                        e: "during"
-                        dt: dt
-                        actor: actor
+                if (!(dt%speed))
+                    canvas = actor.get("canvas")
+                    isInRect = E_PAINT.chkInRect({
+                        cw: canvas.width
+                        ch: canvas.height
+                        x: actor.get("x")
+                        y: actor.get("y")
+                        w: actor.get("w")
+                        h: actor.get("h")
                     })
-                # end
+                    if (dt > 0 && dt < _life_cycle && isInRect)
+                        _act.trigger("during", {
+                            e: "during"
+                            dt: dt
+                            actor: actor
+                        })
+                    # end
+                    else
+                        _act.trigger("finish", {
+                            e: "finish"
+                            dt: dt
+                            actor: actor
+                            isInRect: isInRect
+                        })
                 else
-                    _act.trigger("finish", {
-                        e: "finish"
-                        dt: dt
+                    _act.idle({
                         actor: actor
-                        isInRect: isInRect
                     })
             @
         show_img: (params) ->
@@ -121,14 +137,15 @@ define([
             x = params.x || @get("x")
             y = params.y || @get("y")
             img = params.img
-            E_PAINT.update({
-                x: x
-                y: y
-                w: @get("w")
-                h: @get("h")
-                ctx: @get("ctx")
-                img: img
-            })
+            if img?
+                E_PAINT.update({
+                    x: x
+                    y: y
+                    w: @get("w")
+                    h: @get("h")
+                    ctx: @get("ctx")
+                    img: img
+                })
             @
     })
     ACTOR

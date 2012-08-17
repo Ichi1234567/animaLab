@@ -35,10 +35,9 @@
       statusInfo: {
         walk: {
           imgIds: ['cat/walk-1', 'cat/walk-2', 'cat/walk-3', 'cat/walk-4', 'cat/walk-5', 'cat/walk-6', 'cat/walk-7', 'cat/walk-8'],
-          speed: 150,
+          speed: 80,
           evts: {
             finish: function(actor, e) {
-              console.log(e);
               return animaStack.pop();
             }
           }
@@ -64,7 +63,12 @@
     nextFrame = function() {
       if (timmer != null) cancelRequestAnimFrame(timmer);
       return animaStack.length && (timmer = requestAnimationFrame(function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var isIdle;
+        isIdle = true;
+        animaStack.forEach(function(actor) {
+          return actor.chkIdle(timmer) && (isIdle = false, false);
+        });
+        !isIdle && ctx.clearRect(0, 0, canvas.width, canvas.height);
         animaStack.forEach(function(actor) {
           return actor.tick(timmer);
         });

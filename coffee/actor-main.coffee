@@ -37,12 +37,12 @@ define([
                 imgIds: ['cat/walk-1', 'cat/walk-2', 'cat/walk-3',
                          'cat/walk-4', 'cat/walk-5', 'cat/walk-6',
                          'cat/walk-7', 'cat/walk-8']
-                speed: 150
+                speed: 80
                 #times: 1
                 evts: {
                     #init: (actor) ->
                     finish: (actor, e) ->
-                        console.log e
+                        #console.log e
                         animaStack.pop()
                 }
             }
@@ -91,9 +91,18 @@ define([
         (animaStack.length && (
             timmer = requestAnimationFrame(() ->
                 #console.log animaStack.length
-                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                isIdle = true
                 animaStack.forEach((actor) ->
-                    actor.tick(timmer)
+                    (actor.chkIdle(timmer) && (
+                        isIdle = false
+                        false
+                    ))
+                )
+                (!isIdle &&
+                    ctx.clearRect(0, 0, canvas.width, canvas.height)
+                    animaStack.forEach((actor) ->
+                        actor.tick(timmer)
+                    )
                 )
                 nextFrame()
             )
