@@ -1,6 +1,6 @@
 (function() {
 
-  define(["engine-actor", "imgs-main"], function(E_ACTOR, IMGS) {
+  define(["engine-paint", "engine-actor", "imgs-main"], function(E_PAINT, E_ACTOR, IMGS) {
     var animaStack, canvas, cat, ctx, nextFrame, timmer, url, _imgs;
     console.log("actor-main");
     url = "images-raw/";
@@ -32,11 +32,67 @@
       x: 0,
       y: 0,
       imgs: _imgs.cat,
+      zIndex: 1,
       statusInfo: {
         walk: {
           imgIds: ['cat/walk-1', 'cat/walk-2', 'cat/walk-3', 'cat/walk-4', 'cat/walk-5', 'cat/walk-6', 'cat/walk-7', 'cat/walk-8'],
           speed: 80,
           evts: {
+            finish: function(actor, e) {}
+          }
+        },
+        sit: {
+          imgIds: ["cat/sit-body"],
+          inners: {
+            head: {
+              w: 48,
+              h: 51,
+              x: 0,
+              y: 0,
+              statusInfo: {
+                move: {
+                  speed: 150,
+                  imgIds: ["cat/sit-head-1", "cat/sit-head-2", "cat/sit-head-3", "cat/sit-head-4", "cat/sit-head-5", "cat/sit-head-6", "cat/sit-head-7", "cat/sit-head-8", "cat/sit-head-9"],
+                  evts: {
+                    finish: function(actor, e) {}
+                  }
+                }
+              }
+            },
+            tail: {
+              w: 48,
+              h: 51,
+              x: 0,
+              y: 0,
+              statusInfo: {
+                move: {
+                  speed: 150,
+                  imgIds: ["cat/sit-tail-1", "cat/sit-tail-2", "cat/sit-tail-3", "cat/sit-tail-4", "cat/sit-tail-5", "cat/sit-tail-6"],
+                  evts: {
+                    finish: function(actor, e) {}
+                  }
+                }
+              }
+            }
+          },
+          evts: {
+            init: function(actor, e, params) {
+              var head, tail;
+              head = actor.find("head");
+              head.anima({
+                actId: "move",
+                cb: function(actor) {
+                  return animaStack.push(actor);
+                }
+              });
+              tail = actor.find("tail");
+              return tail.anima({
+                actId: "move",
+                cb: function(actor) {
+                  return animaStack.push(actor);
+                }
+              });
+            },
             finish: function(actor, e) {
               return animaStack.pop();
             }
@@ -46,14 +102,14 @@
     });
     animaStack = [];
     cat.anima({
-      actId: "walk",
+      actId: "sit",
       cb: function(actor) {
         return animaStack.push(actor);
       }
     });
     window.requestAnimationFrame = (function() {
-      return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback, element) {
-        return window.setTimeout(callback, 1000 / 60);
+      return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback, delay) {
+        return window.setTimeout(callback, delay);
       };
     })();
     window.cancelRequestAnimFrame = (function() {
@@ -72,6 +128,7 @@
         animaStack.forEach(function(actor) {
           return actor.tick(timmer);
         });
+        E_PAINT.scene_pool = E_PAINT.update(E_PAINT.scene_pool);
         return nextFrame();
       }));
     };

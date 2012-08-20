@@ -3,7 +3,19 @@
   define([], function() {
     console.log("engine-paint");
     return {
-      update: function(params) {
+      scene_pool: [],
+      update: function(scene_pool) {
+        var i;
+        scene_pool = scene_pool.sort(function(a, b) {
+          return b.zIndex - a.zIndex;
+        });
+        i = scene_pool.length;
+        while (--i >= 0) {
+          (scene_pool.pop())();
+        }
+        return [];
+      },
+      paint: function(params) {
         var ctx, h, img, w, x, y;
         x = params.x;
         y = params.y;
