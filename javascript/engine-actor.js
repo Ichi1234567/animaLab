@@ -22,6 +22,7 @@
           status = {};
           for (i in _tmp_st) {
             st_i = _tmp_st[i];
+            st_i.mother = this;
             st_i.ACTOR = ACTOR;
             st_i.canvas = _canvas;
             st_i.ctx = _ctx;
@@ -116,7 +117,7 @@
         }));
         if (_animaFlag && time >= _animaTime) {
           dt = time - _animaTime - _cycle_time;
-          if (!(dt % speed)) {
+          if (_life_cycle > 1 && !(dt % speed)) {
             canvas = actor.get("canvas");
             isInRect = E_PAINT.chkInRect({
               cw: canvas.width,

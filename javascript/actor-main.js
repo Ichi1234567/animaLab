@@ -49,6 +49,7 @@
               h: 51,
               x: 0,
               y: 0,
+              zIndex: 2,
               statusInfo: {
                 move: {
                   speed: 150,

@@ -22,6 +22,7 @@ define([
             _statusInfo = ((_tmp_st) ->
                 status = {}
                 for i, st_i of _tmp_st
+                    st_i.mother = @
                     st_i.ACTOR = ACTOR
                     st_i.canvas = _canvas
                     st_i.ctx = _ctx
@@ -119,7 +120,7 @@ define([
             ))
             if (_animaFlag && time >= _animaTime)
                 dt = time - _animaTime - _cycle_time
-                if (!(dt%speed))
+                if (_life_cycle > 1 && !(dt%speed))
                     canvas = actor.get("canvas")
                     isInRect = E_PAINT.chkInRect({
                         cw: canvas.width

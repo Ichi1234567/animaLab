@@ -42,18 +42,6 @@ define([
             tmp.finish ?= (actor, e) ->
                 #console.log e
 
-            _IMG_INF = IMG_INF
-            show_img = (actor, act, _IMG_INF, img_id) ->
-                _img = act.get_img({
-                    img_inf: _IMG_INF
-                    actor_id: actor.get("id")
-                    img_id:img_id
-                })
-                #console.log _img
-                () ->
-                    actor.show_img({
-                        img: _img
-                    })
             evts = {
                 init: (actor, act, e, params) ->
                     #console.log(arguments)
@@ -63,9 +51,10 @@ define([
                     act.set("cache", {
                         img_id: img_id
                     })
-                    #show_img(actor, act, _IMG_INF, img_id)
-                    fn = show_img(actor, act, _IMG_INF, img_id)
-                    fn.zIndex = actor.get("zIndex")
+                    fn = act.show_img({
+                        img_id: img_id
+                        actor: actor
+                    })
                     params.cb(fn)
 
                     # 使用者定義的動作
@@ -85,10 +74,10 @@ define([
                     act.set("cache", {
                         img_id: img_id
                     })
-                    #show_img(actor, act, _IMG_INF, img_id)
-                    #params.cb(show_img(actor, act, _IMG_INF, img_id))
-                    fn = show_img(actor, act, _IMG_INF, img_id)
-                    fn.zIndex = actor.get("zIndex")
+                    fn = act.show_img({
+                        img_id: img_id
+                        actor: actor
+                    })
                     params.cb(fn)
                     # 使用者定義的動作
                     tmp.during(actor, e, params)
@@ -129,10 +118,10 @@ define([
                         act.set("cache", {
                             img_id: img_id
                         })
-                        #show_img(actor, act, _IMG_INF, img_id)
-                        #params.cb(show_img(actor, act, _IMG_INF, img_id))
-                        fn = show_img(actor, act, _IMG_INF, img_id)
-                        fn.zIndex = actor.get("zIndex")
+                        fn = act.show_img({
+                            img_id: img_id
+                            actor: actor
+                        })
                         params.cb(fn)
                         act.set("count", count)
                     actor
@@ -190,10 +179,17 @@ define([
                 actor_id: actor.get("id")
                 img_id: img_id
             })
+            (!!actor.get(mother) && (
+                mother = actor.get(mother)
+                x = mother.get("x")
+                y = mother.get("y")
+            ))
             #console.log _img
             fn = () ->
                 actor.show_img({
                     img: _img
+                    x: x + actor.get("x")
+                    y: y + actor.get("y")
                 })
             fn.zIndex = actor.get("zIndex")
             fn

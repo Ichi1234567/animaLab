@@ -26,7 +26,7 @@
         return this;
       },
       valid_input: function(params) {
-        var duration, end_time, evts, imgIds, imgs_num, life_cycle, show_img, speed, start_time, tmp, _IMG_INF, _canvas, _ctx, _inners, _momId, _ref, _ref2, _tmp_inners;
+        var duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _tmp_inners;
         start_time = this.get("start_time");
         end_time = (this.get("end_time")) || start_time + (this.get("duration") || 0);
         duration = Math.abs(start_time - end_time);
@@ -38,20 +38,6 @@
         if (tmp.init == null) tmp.init = function(actor, e) {};
         if (tmp.during == null) tmp.during = function(actor, e) {};
         if (tmp.finish == null) tmp.finish = function(actor, e) {};
-        _IMG_INF = IMG_INF;
-        show_img = function(actor, act, _IMG_INF, img_id) {
-          var _img;
-          _img = act.get_img({
-            img_inf: _IMG_INF,
-            actor_id: actor.get("id"),
-            img_id: img_id
-          });
-          return function() {
-            return actor.show_img({
-              img: _img
-            });
-          };
-        };
         evts = {
           init: function(actor, act, e, params) {
             var fn, img_id;
@@ -59,8 +45,10 @@
             act.set("cache", {
               img_id: img_id
             });
-            fn = show_img(actor, act, _IMG_INF, img_id);
-            fn.zIndex = actor.get("zIndex");
+            fn = act.show_img({
+              img_id: img_id,
+              actor: actor
+            });
             params.cb(fn);
             tmp.init(actor, e, params);
             return actor;
@@ -74,8 +62,10 @@
             act.set("cache", {
               img_id: img_id
             });
-            fn = show_img(actor, act, _IMG_INF, img_id);
-            fn.zIndex = actor.get("zIndex");
+            fn = act.show_img({
+              img_id: img_id,
+              actor: actor
+            });
             params.cb(fn);
             tmp.during(actor, e, params);
             return actor;
@@ -102,8 +92,10 @@
               act.set("cache", {
                 img_id: img_id
               });
-              fn = show_img(actor, act, _IMG_INF, img_id);
-              fn.zIndex = actor.get("zIndex");
+              fn = act.show_img({
+                img_id: img_id,
+                actor: actor
+              });
               params.cb(fn);
               act.set("count", count);
             }
@@ -152,7 +144,7 @@
         return params.img_inf[params.actor_id][params.img_id];
       },
       show_img: function(params) {
-        var actor, fn, img_id, _IMG_INF, _img;
+        var actor, fn, img_id, mother, x, y, _IMG_INF, _img;
         _IMG_INF = IMG_INF;
         actor = params.actor;
         img_id = params.img_id;
@@ -161,9 +153,12 @@
           actor_id: actor.get("id"),
           img_id: img_id
         });
+        !!actor.get(mother) && (mother = actor.get(mother), x = mother.get("x"), y = mother.get("y"));
         fn = function() {
           return actor.show_img({
-            img: _img
+            img: _img,
+            x: x + actor.get("x"),
+            y: y + actor.get("y")
           });
         };
         fn.zIndex = actor.get("zIndex");
