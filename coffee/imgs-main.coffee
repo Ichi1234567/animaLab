@@ -4,6 +4,22 @@ define([
 
     {
         cat: [
+            'cat/sit-body',
+            'cat/sit-head-1',
+            'cat/sit-head-2',
+            'cat/sit-head-3',
+            'cat/sit-head-4',
+            'cat/sit-head-5',
+            'cat/sit-head-6',
+            'cat/sit-head-7',
+            'cat/sit-head-8',
+            'cat/sit-head-9',
+            'cat/sit-tail-1',
+            'cat/sit-tail-2',
+            'cat/sit-tail-3',
+            'cat/sit-tail-4',
+            'cat/sit-tail-5',
+            'cat/sit-tail-6',
             'cat/stand',
             'cat/walk-1',
             'cat/walk-2',

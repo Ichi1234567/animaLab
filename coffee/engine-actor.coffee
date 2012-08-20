@@ -15,12 +15,21 @@ define([
             @
         valid_init: (params) ->
             _tmp_st = params.statusInfo ?= {}
+            _inners = @get("inners")
+            _inners = _inners ?= []
+            _canvas = @get("canvas")
+            _ctx = @get("ctx")
             _statusInfo = ((_tmp_st) ->
                 status = {}
                 for i, st_i of _tmp_st
+                    st_i.ACTOR = ACTOR
+                    st_i.canvas = _canvas
+                    st_i.ctx = _ctx
+                    st_i.momId = params.id
                     status[i] = new E_ACTION(st_i)
                 status
             )(_tmp_st)
+            #console.log(_inners)
             @set({
                 animaFlag : false
                 animaTime : -1
@@ -28,9 +37,10 @@ define([
                 visible   : params.visible   ?= true
                 clickable : params.clickable ?= false
                 curr_st   : params.curr_st   ?= ""
-                inners    : params.inners    ?= {}
                 acts      : _statusInfo
+                inners    : _inners
             })
+            @
 
 
         set_clikable: () ->
@@ -58,9 +68,12 @@ define([
             @set_status(params)
             # 修改actions的資料
             _act = @get("acts")[params.actId]
+            #console.log _act.get("start_time")
             #console.log _act
             _act.set(params)
+            start_time = _act.get("start_time")
             params.cb(@)
+            (!start_time && @tick(0))
             @
         chkIdle: (time) ->
             actor = @
@@ -99,6 +112,9 @@ define([
                     e: "init"
                     dt: 0
                     actor: actor
+                    cb: (scene) ->
+                        #console.log(scene)
+                        E_PAINT.scene_pool.push(scene)
                 })
             ))
             if (_animaFlag && time >= _animaTime)
@@ -118,6 +134,9 @@ define([
                             e: "during"
                             dt: dt
                             actor: actor
+                            cb: (scene) ->
+                                #console.log scene
+                                E_PAINT.scene_pool.push(scene)
                         })
                     # end
                     else
@@ -126,11 +145,13 @@ define([
                             dt: dt
                             actor: actor
                             isInRect: isInRect
+                            cb: (scene) ->
+                                E_PAINT.scene_pool.push(scene)
                         })
                 else
-                    _act.idle({
+                    E_PAINT.scene_pool.push(_act.idle({
                         actor: actor
-                    })
+                    }))
             @
         show_img: (params) ->
             #console.log @
@@ -138,7 +159,7 @@ define([
             y = params.y || @get("y")
             img = params.img
             if img?
-                E_PAINT.update({
+                E_PAINT.paint({
                     x: x
                     y: y
                     w: @get("w")
@@ -147,6 +168,11 @@ define([
                     img: img
                 })
             @
+        find: (elm_name) ->
+            _curr_st = @get("curr_st")
+            _act = @get("acts")[_curr_st]
+            #console.log _act.get("inners")[elm_name]
+            _act.get("inners")[elm_name]
     })
     ACTOR
 )

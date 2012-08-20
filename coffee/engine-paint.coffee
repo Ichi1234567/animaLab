@@ -2,7 +2,16 @@ define([
 ], () ->
     console.log "engine-paint"
     {
-        update: (params) ->
+        scene_pool: []
+        update: (scene_pool) ->
+            scene_pool = scene_pool.sort((a, b) ->
+                b.zIndex - a.zIndex
+            )
+            i = scene_pool.length
+            while(--i >= 0)
+                (scene_pool.pop())()
+            []
+        paint: (params) ->
             #console.log(params)
             x = params.x
             y = params.y

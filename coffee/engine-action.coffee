@@ -25,13 +25,15 @@ define([
             @
         valid_input: (params) ->
             start_time = @get("start_time")
-            end_time = start_time + (@get("duration") || 0) || (@get("end_time"))
+            end_time = (@get("end_time")) || start_time + (@get("duration") || 0)
             duration = Math.abs(start_time - end_time)
             speed = @get("speed")
             imgIds = @get("imgIds")
             imgs_num = imgIds.length
             life_cycle = imgs_num * speed
 
+
+            # events def start
             tmp = params.evts ?= {}
             tmp.init ?= (actor, e) ->
                 #console.log e
@@ -48,9 +50,10 @@ define([
                     img_id:img_id
                 })
                 #console.log _img
-                actor.show_img({
-                    img: _img
-                })
+                () ->
+                    actor.show_img({
+                        img: _img
+                    })
             evts = {
                 init: (actor, act, e, params) ->
                     #console.log(arguments)
@@ -60,10 +63,13 @@ define([
                     act.set("cache", {
                         img_id: img_id
                     })
-                    show_img(actor, act, _IMG_INF, img_id)
+                    #show_img(actor, act, _IMG_INF, img_id)
+                    fn = show_img(actor, act, _IMG_INF, img_id)
+                    fn.zIndex = actor.get("zIndex")
+                    params.cb(fn)
 
                     # 使用者定義的動作
-                    tmp.init(actor, e)
+                    tmp.init(actor, e, params)
                     actor
                 during: (actor, act, e, params) ->
                     #console.log(arguments)
@@ -79,9 +85,13 @@ define([
                     act.set("cache", {
                         img_id: img_id
                     })
-                    show_img(actor, act, _IMG_INF, img_id)
+                    #show_img(actor, act, _IMG_INF, img_id)
+                    #params.cb(show_img(actor, act, _IMG_INF, img_id))
+                    fn = show_img(actor, act, _IMG_INF, img_id)
+                    fn.zIndex = actor.get("zIndex")
+                    params.cb(fn)
                     # 使用者定義的動作
-                    tmp.during(actor, e)
+                    tmp.during(actor, e, params)
                     actor
                 finish: (actor, act, e, params) ->
                     # 顯示這個action的目前的image
@@ -100,14 +110,14 @@ define([
                     (times && count >= times && (
                         isFinish = true
                     ))
-                    ((life_cycle * count + dt) >= duration && (
+                    (duration && (life_cycle * count + dt) >= duration && (
                         isFinish = true
                     ))
                     # position check
 
                     if (isFinish)
                         #console.log("--- finishi ---")
-                        tmp.finish(actor, e)
+                        tmp.finish(actor, e, params)
                         act.set("count", 0)
                         actor.set({
                             animaFlag: false
@@ -119,16 +129,45 @@ define([
                         act.set("cache", {
                             img_id: img_id
                         })
-                        show_img(actor, act, _IMG_INF, img_id)
+                        #show_img(actor, act, _IMG_INF, img_id)
+                        #params.cb(show_img(actor, act, _IMG_INF, img_id))
+                        fn = show_img(actor, act, _IMG_INF, img_id)
+                        fn.zIndex = actor.get("zIndex")
+                        params.cb(fn)
                         act.set("count", count)
                     actor
             }
+            # events def end
+
+            #inner def start
+            _tmp_inners = params.inners ?= {}
+            _momId = params.momId
+            _canvas = params.canvas
+            _ctx = params.ctx
+            _inners = ((_tmp_inners, ACTOR, _momId) ->
+                inners = {}
+                for i, inn_i of _tmp_inners
+                    inn_i.id = _momId
+                    inn_i.canvas = _canvas
+                    inn_i.ctx = _ctx
+                    inners[i] = new ACTOR(inn_i)
+                inners
+            )(_tmp_inners, params.ACTOR, _momId)
+            #console.log (_inners)
+            #inner def end
+            @unset("momId")
+            @unset("canvas")
+            @unset("ctx")
+
+
             @set({
                 end_time: end_time
                 evts: evts
                 duration: duration
                 life_cycle: life_cycle
+                inners: _inners
             })
+            #console.log @
             @
 
         trigger_customEvts: (params) ->
@@ -152,17 +191,19 @@ define([
                 img_id: img_id
             })
             #console.log _img
-            actor.show_img({
-                img: _img
-            })
-            @
+            fn = () ->
+                actor.show_img({
+                    img: _img
+                })
+            fn.zIndex = actor.get("zIndex")
+            fn
         idle: (params) ->
             actor = params.actor
             cache = @get("cache")
-            @show_img({
+            action = @
+            action.show_img({
                 img_id: cache.img_id
                 actor: actor
             })
-            @
     })
 )

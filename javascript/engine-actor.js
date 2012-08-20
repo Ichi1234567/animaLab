@@ -11,27 +11,36 @@
         return this;
       },
       valid_init: function(params) {
-        var _ref, _ref2, _ref3, _ref4, _ref5, _ref6, _statusInfo, _tmp_st;
+        var _canvas, _ctx, _inners, _ref, _ref2, _ref3, _ref4, _ref5, _statusInfo, _tmp_st;
         _tmp_st = (_ref = params.statusInfo) != null ? _ref : params.statusInfo = {};
+        _inners = this.get("inners");
+        _inners = _inners != null ? _inners : _inners = [];
+        _canvas = this.get("canvas");
+        _ctx = this.get("ctx");
         _statusInfo = (function(_tmp_st) {
           var i, st_i, status;
           status = {};
           for (i in _tmp_st) {
             st_i = _tmp_st[i];
+            st_i.ACTOR = ACTOR;
+            st_i.canvas = _canvas;
+            st_i.ctx = _ctx;
+            st_i.momId = params.id;
             status[i] = new E_ACTION(st_i);
           }
           return status;
         })(_tmp_st);
-        return this.set({
+        this.set({
           animaFlag: false,
           animaTime: -1,
           zIndex: (_ref2 = params.zIndex) != null ? _ref2 : params.zIndex = 0,
           visible: (_ref3 = params.visible) != null ? _ref3 : params.visible = true,
           clickable: (_ref4 = params.clickable) != null ? _ref4 : params.clickable = false,
           curr_st: (_ref5 = params.curr_st) != null ? _ref5 : params.curr_st = "",
-          inners: (_ref6 = params.inners) != null ? _ref6 : params.inners = {},
-          acts: _statusInfo
+          acts: _statusInfo,
+          inners: _inners
         });
+        return this;
       },
       set_clikable: function() {
         return this;
@@ -61,12 +70,14 @@
         return this;
       },
       anima: function(params) {
-        var _act;
+        var start_time, _act;
         this.set("animaTime", 0);
         this.set_status(params);
         _act = this.get("acts")[params.actId];
         _act.set(params);
+        start_time = _act.get("start_time");
         params.cb(this);
+        !start_time && this.tick(0);
         return this;
       },
       chkIdle: function(time) {
@@ -98,7 +109,10 @@
         }), _act.trigger("init", {
           e: "init",
           dt: 0,
-          actor: actor
+          actor: actor,
+          cb: function(scene) {
+            return E_PAINT.scene_pool.push(scene);
+          }
         }));
         if (_animaFlag && time >= _animaTime) {
           dt = time - _animaTime - _cycle_time;
@@ -116,20 +130,26 @@
               _act.trigger("during", {
                 e: "during",
                 dt: dt,
-                actor: actor
+                actor: actor,
+                cb: function(scene) {
+                  return E_PAINT.scene_pool.push(scene);
+                }
               });
             } else {
               _act.trigger("finish", {
                 e: "finish",
                 dt: dt,
                 actor: actor,
-                isInRect: isInRect
+                isInRect: isInRect,
+                cb: function(scene) {
+                  return E_PAINT.scene_pool.push(scene);
+                }
               });
             }
           } else {
-            _act.idle({
+            E_PAINT.scene_pool.push(_act.idle({
               actor: actor
-            });
+            }));
           }
         }
         return this;
@@ -140,7 +160,7 @@
         y = params.y || this.get("y");
         img = params.img;
         if (img != null) {
-          E_PAINT.update({
+          E_PAINT.paint({
             x: x,
             y: y,
             w: this.get("w"),
@@ -150,6 +170,12 @@
           });
         }
         return this;
+      },
+      find: function(elm_name) {
+        var _act, _curr_st;
+        _curr_st = this.get("curr_st");
+        _act = this.get("acts")[_curr_st];
+        return _act.get("inners")[elm_name];
       }
     });
     return ACTOR;
