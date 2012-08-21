@@ -91,7 +91,7 @@
         _cycle_time = _life_cycle * _act.get("count");
         speed = _act.get("speed");
         dt = time - _animaTime - _cycle_time;
-        return !!(dt % speed) || !_animaTime;
+        return (!!(dt % speed) && !_animaTime) || _life_cycle === 1;
       },
       tick: function(time) {
         var actor, canvas, dt, isInRect, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle;

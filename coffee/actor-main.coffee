@@ -39,7 +39,7 @@ define([
                 imgIds: ['cat/walk-1', 'cat/walk-2', 'cat/walk-3',
                          'cat/walk-4', 'cat/walk-5', 'cat/walk-6',
                          'cat/walk-7', 'cat/walk-8']
-                speed: 80
+                speed: 8
                 #times: 1
                 evts: {
                     #init: (actor) ->
@@ -60,7 +60,7 @@ define([
                         zIndex: 2
                         statusInfo: {
                             move: {
-                                speed: 150
+                                speed: 10
                                 imgIds: ["cat/sit-head-1","cat/sit-head-2","cat/sit-head-3","cat/sit-head-4","cat/sit-head-5",
                                    "cat/sit-head-6","cat/sit-head-7","cat/sit-head-8","cat/sit-head-9"]
                                 evts: {
@@ -78,7 +78,7 @@ define([
                         y: 0
                         statusInfo: {
                             move: {
-                                speed: 150
+                                speed: 10
                                 imgIds: ["cat/sit-tail-1","cat/sit-tail-2","cat/sit-tail-3","cat/sit-tail-4","cat/sit-tail-5",
                                        "cat/sit-tail-6"]
                                 evts: {
@@ -112,6 +112,7 @@ define([
         }
     })
 
+    #animaStack應該要變成globle的
     animaStack = []
     #cat.anima({
     #    actId: "walk"
@@ -149,27 +150,57 @@ define([
         )
     )()
 
+
+
     timmer = null
+    Frames = 0
+    UpdateTime = 1000
+    LastTime = new Date()
+    Fps = 0
+    _Math = Math
+
+    _MIN_TICK = 1000 / 30
+    _MAX_TICK = 1000 / 60
+    lastPhysics = new Date()
+    physics_clock = 0
     nextFrame = () ->
         if timmer?
             cancelRequestAnimFrame(timmer)
         (animaStack.length && (
             timmer = requestAnimationFrame(() ->
                 #console.log animaStack.length
-                isIdle = true
-                animaStack.forEach((actor) ->
-                    (actor.chkIdle(timmer) && (
-                        isIdle = false
-                        false
-                    ))
-                )
-                (!isIdle &&
-                    ctx.clearRect(0, 0, canvas.width, canvas.height)
+                currentPysics = new Date()
+                delta = currentPysics.getTime() - lastPhysics.getTime()
+                if ((delta - _MIN_TICK) * (delta - _MAX_TICK) <= 0)
+                    lastPhysics = currentPysics
+                    isIdle = true
                     animaStack.forEach((actor) ->
-                        actor.tick(timmer)
+                        (!actor.chkIdle(physics_clock) && (
+                            isIdle = false
+                            false
+                        ))
                     )
-                    E_PAINT.scene_pool = E_PAINT.update(E_PAINT.scene_pool)
-                )
+                    #console.log isIdle
+                    (!isIdle &&
+                        #ctx.clearRect(0, 0, canvas.width, canvas.height)
+                        animaStack.forEach((actor) ->
+                            actor.tick(physics_clock)
+                        )
+                        E_PAINT.scene_pool = E_PAINT.update(E_PAINT.scene_pool, () ->
+                            ctx.clearRect(0, 0, canvas.width, canvas.height)
+                        )
+                    )
+                    E_PAINT.scene_pool = []
+                    curr_time = new Date()
+                    Frames++
+                    dt = curr_time.getTime() - LastTime.getTime()
+                    if (dt > UpdateTime)
+                        _fps = _Math.round((Frames/dt) * UpdateTime)
+                        Frames = 0
+                        LastTime = curr_time
+                        $("#fps").html(_fps)
+                    physics_clock++
+
                 nextFrame()
             )
         ))

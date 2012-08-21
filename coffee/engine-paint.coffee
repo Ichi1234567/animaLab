@@ -3,7 +3,8 @@ define([
     console.log "engine-paint"
     {
         scene_pool: []
-        update: (scene_pool) ->
+        update: (scene_pool, prefn) ->
+            (scene_pool.length && prefn())
             scene_pool = scene_pool.sort((a, b) ->
                 b.zIndex - a.zIndex
             )

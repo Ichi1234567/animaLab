@@ -85,9 +85,15 @@ define([
             _cycle_time = _life_cycle * _act.get("count")
             speed = _act.get("speed")
             dt = time - _animaTime - _cycle_time
-            !!(dt%speed) || !_animaTime
+            #console.log("---------------------------")
+            #console.log !!dt%speed
+            #console.log !_animaTime
+            #console.log _life_cycle
+            #console.log((!!(dt%speed) && !_animaTime) || _life_cycle is 1)
+            (!!(dt%speed) && !_animaTime) || _life_cycle is 1
         tick: (time) ->
             #console.log("--------------- tick ---------------")
+            #console.log time
             actor = @
             #console.log @
             _curr_st = @get("curr_st")

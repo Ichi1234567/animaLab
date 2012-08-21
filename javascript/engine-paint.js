@@ -4,8 +4,9 @@
     console.log("engine-paint");
     return {
       scene_pool: [],
-      update: function(scene_pool) {
+      update: function(scene_pool, prefn) {
         var i;
+        scene_pool.length && prefn();
         scene_pool = scene_pool.sort(function(a, b) {
           return b.zIndex - a.zIndex;
         });
