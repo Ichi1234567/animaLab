@@ -103,7 +103,7 @@
     });
     animaStack = [];
     cat.anima({
-      actId: "walk",
+      actId: "sit",
       cb: function(actor) {
         return animaStack.push(actor);
       }
