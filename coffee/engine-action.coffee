@@ -110,7 +110,7 @@ define([
                         act.set("count", 0)
                         actor.set({
                             animaFlag: false
-                            animaTime: -1
+                            #animaTime: -1
                         })
                     else
                         #console.log("--- continue ---")
@@ -133,15 +133,17 @@ define([
             _momId = params.momId
             _canvas = params.canvas
             _ctx = params.ctx
-            _inners = ((_tmp_inners, ACTOR, _momId) ->
+            _start_time = @get("start_time")
+            _inners = ((_tmp_inners, ACTOR, _momId, _start_time) ->
                 inners = {}
                 for i, inn_i of _tmp_inners
                     inn_i.id = _momId
                     inn_i.canvas = _canvas
                     inn_i.ctx = _ctx
+                    inn_i.start_time = _start_time
                     inners[i] = new ACTOR(inn_i)
                 inners
-            )(_tmp_inners, params.ACTOR, _momId)
+            )(_tmp_inners, params.ACTOR, _momId, _start_time)
             #console.log (_inners)
             #inner def end
             @unset("momId")
@@ -201,5 +203,10 @@ define([
                 img_id: cache.img_id
                 actor: actor
             })
+        updateInners: (params) ->
+            inners = @get("inners")
+            for i, inn_i of inners
+                inn_i.set("animaTime", params.animaTime)
+            
     })
 )

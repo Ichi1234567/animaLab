@@ -36,17 +36,22 @@ define([
         zIndex: 1
         statusInfo: {
             walk: {
+                transform: {}
                 imgIds: ['cat/walk-1', 'cat/walk-2', 'cat/walk-3',
                          'cat/walk-4', 'cat/walk-5', 'cat/walk-6',
                          'cat/walk-7', 'cat/walk-8']
                 speed: 8
-                #times: 1
+                times: 2
                 evts: {
                     #init: (actor) ->
                     finish: (actor, e) ->
                         #console.log e
                         # check the correct actor to pop
                         #animaStack.pop()
+                        actor.anima({
+                            start_time: 1
+                            actId: "sit"
+                        })
                 }
             }
             sit: {
@@ -64,6 +69,8 @@ define([
                                 imgIds: ["cat/sit-head-1","cat/sit-head-2","cat/sit-head-3","cat/sit-head-4","cat/sit-head-5",
                                    "cat/sit-head-6","cat/sit-head-7","cat/sit-head-8","cat/sit-head-9"]
                                 evts: {
+                                    init: () ->
+                                        #console.log "head"
                                     finish: (actor, e) ->
                                         # check the correct actor to pop
                                         #animaStack.pop()
@@ -82,6 +89,8 @@ define([
                                 imgIds: ["cat/sit-tail-1","cat/sit-tail-2","cat/sit-tail-3","cat/sit-tail-4","cat/sit-tail-5",
                                        "cat/sit-tail-6"]
                                 evts: {
+                                    init: () ->
+                                        #console.log "tail"
                                     finish: (actor, e) ->
                                 }
                             }
@@ -93,6 +102,7 @@ define([
                     init: (actor, e, params) ->
                         head = actor.find("head")
                         #console.log head
+                        #console.log "body"
                         head.anima({
                             actId: "move"
                             cb: (actor) ->
@@ -106,7 +116,7 @@ define([
                         })
                     finish: (actor, e) ->
                         #console.log e
-                        animaStack.pop()
+                        #animaStack.pop()
                 }
             }
         }
@@ -114,16 +124,16 @@ define([
 
     #animaStack應該要變成globle的
     animaStack = []
-    #cat.anima({
-    #    actId: "walk"
-    #    cb: (actor) ->
-    #        animaStack.push(actor)
-    #})
     cat.anima({
-        actId: "sit"
+        actId: "walk"
         cb: (actor) ->
             animaStack.push(actor)
     })
+    #cat.anima({
+    #    actId: "sit"
+    #    cb: (actor) ->
+    #        animaStack.push(actor)
+    #})
 
     
     # clock
@@ -183,6 +193,7 @@ define([
                     #console.log isIdle
                     (!isIdle &&
                         #ctx.clearRect(0, 0, canvas.width, canvas.height)
+                        #console.log(animaStack.length)
                         animaStack.forEach((actor) ->
                             actor.tick(physics_clock)
                         )

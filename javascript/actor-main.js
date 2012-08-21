@@ -35,10 +35,17 @@
       zIndex: 1,
       statusInfo: {
         walk: {
+          transform: {},
           imgIds: ['cat/walk-1', 'cat/walk-2', 'cat/walk-3', 'cat/walk-4', 'cat/walk-5', 'cat/walk-6', 'cat/walk-7', 'cat/walk-8'],
           speed: 8,
+          times: 2,
           evts: {
-            finish: function(actor, e) {}
+            finish: function(actor, e) {
+              return actor.anima({
+                start_time: 1,
+                actId: "sit"
+              });
+            }
           }
         },
         sit: {
@@ -55,6 +62,7 @@
                   speed: 10,
                   imgIds: ["cat/sit-head-1", "cat/sit-head-2", "cat/sit-head-3", "cat/sit-head-4", "cat/sit-head-5", "cat/sit-head-6", "cat/sit-head-7", "cat/sit-head-8", "cat/sit-head-9"],
                   evts: {
+                    init: function() {},
                     finish: function(actor, e) {}
                   }
                 }
@@ -70,6 +78,7 @@
                   speed: 10,
                   imgIds: ["cat/sit-tail-1", "cat/sit-tail-2", "cat/sit-tail-3", "cat/sit-tail-4", "cat/sit-tail-5", "cat/sit-tail-6"],
                   evts: {
+                    init: function() {},
                     finish: function(actor, e) {}
                   }
                 }
@@ -94,16 +103,14 @@
                 }
               });
             },
-            finish: function(actor, e) {
-              return animaStack.pop();
-            }
+            finish: function(actor, e) {}
           }
         }
       }
     });
     animaStack = [];
     cat.anima({
-      actId: "sit",
+      actId: "walk",
       cb: function(actor) {
         return animaStack.push(actor);
       }
