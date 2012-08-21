@@ -171,7 +171,7 @@ define([
                 #console.log animaStack.length
                 currentPysics = new Date()
                 delta = currentPysics.getTime() - lastPhysics.getTime()
-                if ((delta - _MIN_TICK) * (delta - _MAX_TICK) <= 0)
+                if (delta > _MAX_TICK)
                     lastPhysics = currentPysics
                     isIdle = true
                     animaStack.forEach((actor) ->
