@@ -1,0 +1,4 @@
+coffee/ merge=ours
+sass/ merge=ours
+*.sh merge=ours
+build.js merge=ours
