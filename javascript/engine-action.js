@@ -26,7 +26,7 @@
         return this;
       },
       valid_input: function(params) {
-        var duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _tmp_inners;
+        var duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _start_time, _tmp_inners;
         start_time = this.get("start_time");
         end_time = (this.get("end_time")) || start_time + (this.get("duration") || 0);
         duration = Math.abs(start_time - end_time);
@@ -84,8 +84,7 @@
               tmp.finish(actor, e, params);
               act.set("count", 0);
               actor.set({
-                animaFlag: false,
-                animaTime: -1
+                animaFlag: false
               });
             } else {
               img_id = imgIds[~~(dt / speed)];
@@ -106,7 +105,8 @@
         _momId = params.momId;
         _canvas = params.canvas;
         _ctx = params.ctx;
-        _inners = (function(_tmp_inners, ACTOR, _momId) {
+        _start_time = this.get("start_time");
+        _inners = (function(_tmp_inners, ACTOR, _momId, _start_time) {
           var i, inn_i, inners;
           inners = {};
           for (i in _tmp_inners) {
@@ -114,10 +114,11 @@
             inn_i.id = _momId;
             inn_i.canvas = _canvas;
             inn_i.ctx = _ctx;
+            inn_i.start_time = _start_time;
             inners[i] = new ACTOR(inn_i);
           }
           return inners;
-        })(_tmp_inners, params.ACTOR, _momId);
+        })(_tmp_inners, params.ACTOR, _momId, _start_time);
         this.unset("momId");
         this.unset("canvas");
         this.unset("ctx");
@@ -173,6 +174,16 @@
           img_id: cache.img_id,
           actor: actor
         });
+      },
+      updateInners: function(params) {
+        var i, inn_i, inners, _results;
+        inners = this.get("inners");
+        _results = [];
+        for (i in inners) {
+          inn_i = inners[i];
+          _results.push(inn_i.set("animaTime", params.animaTime));
+        }
+        return _results;
       }
     });
   });
