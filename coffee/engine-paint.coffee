@@ -20,7 +20,7 @@ define([
             h = params.h
             img = params.img
             ctx = params.ctx
-            ctx.drawImage(img, 0, 0)
+            ctx.drawImage(img, x, y)
             @
         clear: (params) ->
             canvas = params.canvas

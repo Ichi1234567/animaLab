@@ -49,7 +49,7 @@ define([
                         # check the correct actor to pop
                         #animaStack.pop()
                         actor.anima({
-                            start_time: 1
+                            #start_time: 1
                             actId: "sit"
                         })
                 }
@@ -137,6 +137,7 @@ define([
 
     
     # clock
+    #delay = 1000 / 60
     window.requestAnimationFrame = (() ->
         (
             window.webkitRequestAnimationFrame ||
@@ -144,8 +145,8 @@ define([
             window.oRequestAnimationFrame ||
             window.msRequestAnimationFrame ||
             (callback, delay) ->
-                #window.setTimeout(callback, 1000 / 60)
-                window.setTimeout(callback, delay)
+                window.setTimeout(callback, 1000 / 60)
+                #window.setTimeout(callback, delay)
         )
     )()
 

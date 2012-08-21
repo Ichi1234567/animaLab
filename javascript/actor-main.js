@@ -42,7 +42,6 @@
           evts: {
             finish: function(actor, e) {
               return actor.anima({
-                start_time: 1,
                 actId: "sit"
               });
             }
@@ -117,7 +116,7 @@
     });
     window.requestAnimationFrame = (function() {
       return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback, delay) {
-        return window.setTimeout(callback, delay);
+        return window.setTimeout(callback, 1000 / 60);
       };
     })();
     window.cancelRequestAnimFrame = (function() {

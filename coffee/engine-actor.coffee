@@ -14,16 +14,17 @@ define([
             @valid_init(params)
             @
         valid_init: (params) ->
+            actor = @
             _tmp_st = params.statusInfo ?= {}
-            _inners = @get("inners")
+            _inners = actor.get("inners")
             _inners = _inners ?= []
-            _canvas = @get("canvas")
-            _ctx = @get("ctx")
+            _canvas = actor.get("canvas")
+            _ctx = actor.get("ctx")
             _start_time = params.start_time
             _statusInfo = ((_tmp_st) ->
                 status = {}
                 for i, st_i of _tmp_st
-                    st_i.mother = @
+                    st_i.mother = actor
                     st_i.ACTOR = ACTOR
                     st_i.canvas = _canvas
                     st_i.ctx = _ctx
@@ -69,19 +70,20 @@ define([
         anima: (params) ->
             #console.log("anima")
             # 修改current status
-            @set("animaFlag", false)
-            @set_status(params)
+            actor = @
+            actor.set("animaFlag", false)
+            actor.set_status(params)
             # 修改actions的資料
-            _act = @get("acts")[params.actId]
+            _act = actor.get("acts")[params.actId]
             #console.log _act.get("start_time")
             #console.log _act
             _act.set(params)
             _act.updateInners({
-                animaTime: @get("animaTime")
+                animaTime: actor.get("animaTime")
             })
             start_time = _act.get("start_time")
-            (!!params.cb && params.cb(@))
-            (!start_time && @tick(0))
+            (!!params.cb && params.cb(actor))
+            (!start_time && actor.tick(0))
             @
         chkIdle: (time) ->
             actor = @
@@ -105,16 +107,17 @@ define([
             #console.log _animaFlag && _curr_st == _prev_st
             (_animaFlag && ((!!(dt%speed) && !_animaTime) || _life_cycle is 1)) ||
             (!_animaFlag && (_curr_st == _prev_st && time > _act_start_time + _animaTime))
+
         tick: (time) ->
             #console.log("--------------- tick ---------------")
             #console.log time
             actor = @
             #console.log @
-            _curr_st = @get("curr_st")
-            _act = @get("acts")[_curr_st]
+            _curr_st = actor.get("curr_st")
+            _animaFlag = actor.get("animaFlag")
+            _animaTime = actor.get("animaTime")
+            _act = actor.get("acts")[_curr_st]
             _act_start_time = _act.get("start_time")
-            _animaFlag = @get("animaFlag")
-            _animaTime = @get("animaTime")
             _life_cycle = _act.get("life_cycle")
             _cycle_time = _life_cycle * _act.get("count")
             speed = _act.get("speed")
@@ -206,6 +209,10 @@ define([
             targetX = params.targetX ?= x
             targetY = params.targetY ?= y
             easing = params.easing ?= "linear"
+            @
+
+        addAction: () ->
+            @
     })
     ACTOR
 )

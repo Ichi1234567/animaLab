@@ -5,8 +5,9 @@
     console.log("engine-action");
     return ACTION = Backbone.Model.extend({
       initialize: function(params) {
-        var _ref, _ref2, _ref3, _ref4;
-        this.set({
+        var action, _ref, _ref2, _ref3, _ref4;
+        action = this;
+        action.set({
           count: 0,
           times: (_ref = params.times) != null ? _ref : params.times = 0,
           start_time: params.start_time || 0,
@@ -17,21 +18,22 @@
             imgId: ""
           }
         });
-        this.valid_input(params);
-        this.on("init during finish", function(params) {
+        action.valid_input(params);
+        action.on("init during finish", function(params) {
           var _act;
-          _act = this;
+          _act = action;
           return _act.trigger_customEvts(params);
-        }, this);
+        }, action);
         return this;
       },
       valid_input: function(params) {
-        var duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _start_time, _tmp_inners;
-        start_time = this.get("start_time");
-        end_time = (this.get("end_time")) || start_time + (this.get("duration") || 0);
+        var action, duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _start_time, _tmp_inners;
+        action = this;
+        start_time = action.get("start_time");
+        end_time = (action.get("end_time")) || start_time + (action.get("duration") || 0);
         duration = Math.abs(start_time - end_time);
-        speed = this.get("speed");
-        imgIds = this.get("imgIds");
+        speed = action.get("speed");
+        imgIds = action.get("imgIds");
         imgs_num = imgIds.length;
         life_cycle = imgs_num * speed;
         tmp = (_ref = params.evts) != null ? _ref : params.evts = {};
@@ -105,7 +107,7 @@
         _momId = params.momId;
         _canvas = params.canvas;
         _ctx = params.ctx;
-        _start_time = this.get("start_time");
+        _start_time = action.get("start_time");
         _inners = (function(_tmp_inners, ACTOR, _momId, _start_time) {
           var i, inn_i, inners;
           inners = {};
@@ -119,10 +121,10 @@
           }
           return inners;
         })(_tmp_inners, params.ACTOR, _momId, _start_time);
-        this.unset("momId");
-        this.unset("canvas");
-        this.unset("ctx");
-        this.set({
+        action.unset("momId");
+        action.unset("canvas");
+        action.unset("ctx");
+        action.set({
           end_time: end_time,
           evts: evts,
           duration: duration,
@@ -154,7 +156,9 @@
           actor_id: actor.get("id"),
           img_id: img_id
         });
-        !!actor.get(mother) && (mother = actor.get(mother), x = mother.get("x"), y = mother.get("y"));
+        !!actor.get("mother") && (mother = actor.get("mother"), x = mother.get("x"), y = mother.get("y"));
+        x = x != null ? x : x = 0;
+        y = y != null ? y : y = 0;
         fn = function() {
           return actor.show_img({
             img: _img,
@@ -168,8 +172,8 @@
       idle: function(params) {
         var action, actor, cache;
         actor = params.actor;
-        cache = this.get("cache");
         action = this;
+        cache = action.get("cache");
         return action.show_img({
           img_id: cache.img_id,
           actor: actor

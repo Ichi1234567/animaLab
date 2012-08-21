@@ -5,7 +5,8 @@ define([
 
     ACTION = Backbone.Model.extend({
         initialize: (params) ->
-            @set({
+            action = @
+            action.set({
                 count      : 0
                 times      : params.times ?= 0
                 start_time : (params.start_time || 0)
@@ -15,20 +16,21 @@ define([
                 ease       : params.easing ?= "linear"
                 cache      : { imgId: "" }
             })
-            @valid_input(params)
-            @on("init during finish", (params) ->
+            action.valid_input(params)
+            action.on("init during finish", (params) ->
                 #console.log "on"
                 #console.log arguments
-                _act = @
+                _act = action
                 _act.trigger_customEvts(params)
-            ,@)
+            ,action)
             @
         valid_input: (params) ->
-            start_time = @get("start_time")
-            end_time = (@get("end_time")) || start_time + (@get("duration") || 0)
+            action = @
+            start_time = action.get("start_time")
+            end_time = (action.get("end_time")) || start_time + (action.get("duration") || 0)
             duration = Math.abs(start_time - end_time)
-            speed = @get("speed")
-            imgIds = @get("imgIds")
+            speed = action.get("speed")
+            imgIds = action.get("imgIds")
             imgs_num = imgIds.length
             life_cycle = imgs_num * speed
 
@@ -133,7 +135,7 @@ define([
             _momId = params.momId
             _canvas = params.canvas
             _ctx = params.ctx
-            _start_time = @get("start_time")
+            _start_time = action.get("start_time")
             _inners = ((_tmp_inners, ACTOR, _momId, _start_time) ->
                 inners = {}
                 for i, inn_i of _tmp_inners
@@ -146,12 +148,12 @@ define([
             )(_tmp_inners, params.ACTOR, _momId, _start_time)
             #console.log (_inners)
             #inner def end
-            @unset("momId")
-            @unset("canvas")
-            @unset("ctx")
+            action.unset("momId")
+            action.unset("canvas")
+            action.unset("ctx")
 
 
-            @set({
+            action.set({
                 end_time: end_time
                 evts: evts
                 duration: duration
@@ -181,11 +183,13 @@ define([
                 actor_id: actor.get("id")
                 img_id: img_id
             })
-            (!!actor.get(mother) && (
-                mother = actor.get(mother)
+            (!!actor.get("mother") && (
+                mother = actor.get("mother")
                 x = mother.get("x")
                 y = mother.get("y")
             ))
+            x = x ?= 0
+            y = y ?= 0
             #console.log _img
             fn = () ->
                 actor.show_img({
@@ -197,8 +201,8 @@ define([
             fn
         idle: (params) ->
             actor = params.actor
-            cache = @get("cache")
             action = @
+            cache = action.get("cache")
             action.show_img({
                 img_id: cache.img_id
                 actor: actor
