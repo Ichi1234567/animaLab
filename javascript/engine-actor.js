@@ -11,19 +11,20 @@
         return this;
       },
       valid_init: function(params) {
-        var _canvas, _ctx, _inners, _ref, _ref2, _ref3, _ref4, _ref5, _start_time, _statusInfo, _tmp_st;
+        var actor, _canvas, _ctx, _inners, _ref, _ref2, _ref3, _ref4, _ref5, _start_time, _statusInfo, _tmp_st;
+        actor = this;
         _tmp_st = (_ref = params.statusInfo) != null ? _ref : params.statusInfo = {};
-        _inners = this.get("inners");
+        _inners = actor.get("inners");
         _inners = _inners != null ? _inners : _inners = [];
-        _canvas = this.get("canvas");
-        _ctx = this.get("ctx");
+        _canvas = actor.get("canvas");
+        _ctx = actor.get("ctx");
         _start_time = params.start_time;
         _statusInfo = (function(_tmp_st) {
           var i, st_i, status;
           status = {};
           for (i in _tmp_st) {
             st_i = _tmp_st[i];
-            st_i.mother = this;
+            st_i.mother = actor;
             st_i.ACTOR = ACTOR;
             st_i.canvas = _canvas;
             st_i.ctx = _ctx;
@@ -74,21 +75,34 @@
         return this;
       },
       anima: function(params) {
-        var start_time, _act;
-        this.set("animaFlag", false);
-        this.set_status(params);
-        _act = this.get("acts")[params.actId];
+        var actor, start_time, _act, _opts;
+        actor = this;
+        actor.set("animaFlag", false);
+        actor.set_status(params);
+        _act = actor.get("acts")[params.actId];
         _act.set(params);
-        _act.updateInners({
-          animaTime: this.get("animaTime")
-        });
+        _opts = {
+          animaTime: actor.get("animaTime")
+        };
+        if (params.times) _opts.times = params.times;
+        _act.updateInners(_opts);
         start_time = _act.get("start_time");
-        !!params.cb && params.cb(this);
-        !start_time && this.tick(0);
+        !!params.cb && params.cb(actor);
+        return this;
+      },
+      stopAnima: function(params) {
+        var actor, _act;
+        actor = this;
+        _act = actor.get("acts")[actor.get("curr_st")];
+        _act.trigger("finish", {
+          e: "finish",
+          actor: actor,
+          isInRect: false
+        });
         return this;
       },
       chkIdle: function(time) {
-        var actor, dt, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle, _prev_st;
+        var actor, count, dt, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle, _prev_st;
         actor = this;
         _animaFlag = actor.get("animaFlag");
         _curr_st = actor.get("curr_st");
@@ -100,16 +114,17 @@
         _cycle_time = _life_cycle * _act.get("count");
         speed = _act.get("speed");
         dt = time - _animaTime - _cycle_time;
-        return (_animaFlag && ((!!(dt % speed) && !_animaTime) || _life_cycle === 1)) || (!_animaFlag && (_curr_st === _prev_st && time > _act_start_time + _animaTime));
+        count = _act.get("count");
+        return (_animaFlag && ((!!(dt % speed) && !_animaTime) || _life_cycle === 1) && dt !== _life_cycle) || (!_animaFlag && (_curr_st === _prev_st && time > _act_start_time + _animaTime));
       },
       tick: function(time) {
         var actor, canvas, dt, isInRect, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle;
         actor = this;
-        _curr_st = this.get("curr_st");
-        _act = this.get("acts")[_curr_st];
+        _curr_st = actor.get("curr_st");
+        _animaFlag = actor.get("animaFlag");
+        _animaTime = actor.get("animaTime");
+        _act = actor.get("acts")[_curr_st];
         _act_start_time = _act.get("start_time");
-        _animaFlag = this.get("animaFlag");
-        _animaTime = this.get("animaTime");
         _life_cycle = _act.get("life_cycle");
         _cycle_time = _life_cycle * _act.get("count");
         speed = _act.get("speed");
@@ -126,7 +141,7 @@
         }));
         if (_animaFlag && time >= _animaTime) {
           dt = time - _animaTime - _cycle_time;
-          if (_life_cycle > 1 && !(dt % speed)) {
+          if (!(dt % speed)) {
             canvas = actor.get("canvas");
             isInRect = E_PAINT.chkInRect({
               cw: canvas.width,
@@ -193,7 +208,11 @@
         y = this.get("y");
         targetX = (_ref = params.targetX) != null ? _ref : params.targetX = x;
         targetY = (_ref2 = params.targetY) != null ? _ref2 : params.targetY = y;
-        return easing = (_ref3 = params.easing) != null ? _ref3 : params.easing = "linear";
+        easing = (_ref3 = params.easing) != null ? _ref3 : params.easing = "linear";
+        return this;
+      },
+      addAction: function() {
+        return this;
       }
     });
     return ACTOR;

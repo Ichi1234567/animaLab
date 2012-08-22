@@ -5,8 +5,9 @@
     console.log("engine-action");
     return ACTION = Backbone.Model.extend({
       initialize: function(params) {
-        var _ref, _ref2, _ref3, _ref4;
-        this.set({
+        var action, _ref, _ref2, _ref3, _ref4;
+        action = this;
+        action.set({
           count: 0,
           times: (_ref = params.times) != null ? _ref : params.times = 0,
           start_time: params.start_time || 0,
@@ -17,21 +18,22 @@
             imgId: ""
           }
         });
-        this.valid_input(params);
-        this.on("init during finish", function(params) {
+        action.valid_input(params);
+        action.on("init during finish", function(params) {
           var _act;
-          _act = this;
+          _act = action;
           return _act.trigger_customEvts(params);
-        }, this);
+        }, action);
         return this;
       },
       valid_input: function(params) {
-        var duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _start_time, _tmp_inners;
-        start_time = this.get("start_time");
-        end_time = (this.get("end_time")) || start_time + (this.get("duration") || 0);
+        var action, duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _tmp_inners;
+        action = this;
+        start_time = action.get("start_time");
+        end_time = (action.get("end_time")) || start_time + (action.get("duration") || 0);
         duration = Math.abs(start_time - end_time);
-        speed = this.get("speed");
-        imgIds = this.get("imgIds");
+        speed = action.get("speed");
+        imgIds = action.get("imgIds");
         imgs_num = imgIds.length;
         life_cycle = imgs_num * speed;
         tmp = (_ref = params.evts) != null ? _ref : params.evts = {};
@@ -41,7 +43,7 @@
         evts = {
           init: function(actor, act, e, params) {
             var fn, img_id;
-            img_id = imgIds[~~(params.dt / speed)];
+            img_id = imgs_num === 1 ? imgIds[0] : imgIds[~~(params.dt / speed)];
             act.set("cache", {
               img_id: img_id
             });
@@ -58,7 +60,7 @@
             dt = params.dt;
             count = act.get("count");
             dt - life_cycle >= 0 && (count++, act.set("count", count), dt -= life_cycle);
-            img_id = imgIds[~~(dt / speed)];
+            img_id = imgs_num === 1 ? imgIds[0] : imgIds[~~(dt / speed)];
             act.set("cache", {
               img_id: img_id
             });
@@ -71,23 +73,30 @@
             return actor;
           },
           finish: function(actor, act, e, params) {
-            var count, dt, fn, img_id, isFinish, times;
-            times = act.get("times");
-            count = act.get("count");
-            duration = act.get("duration");
-            dt = params.dt;
-            dt - life_cycle >= 0 && (count++, act.set("count", count), dt -= life_cycle);
+            var count, dt, fn, i, img_id, inn_i, inners, isFinish, times;
             isFinish = !(~~params.isInRect);
-            times && count >= times && (isFinish = true);
-            duration && (life_cycle * count + dt) >= duration && (isFinish = true);
+            if (!isFinish) {
+              times = act.get("times");
+              count = act.get("count");
+              duration = act.get("duration");
+              dt = params.dt;
+              dt - life_cycle >= 0 && (count++, act.set("count", count), dt -= life_cycle);
+              times && count >= times && (isFinish = true);
+              duration && (life_cycle * count + dt) >= duration && (isFinish = true);
+            }
             if (isFinish) {
               tmp.finish(actor, e, params);
               act.set("count", 0);
               actor.set({
                 animaFlag: false
               });
+              inners = act.get("inners");
+              for (i in inners) {
+                inn_i = inners[i];
+                inn_i.stopAnima();
+              }
             } else {
-              img_id = imgIds[~~(dt / speed)];
+              img_id = imgs_num === 1 ? imgIds[0] : imgIds[~~(dt / speed)];
               act.set("cache", {
                 img_id: img_id
               });
@@ -105,8 +114,7 @@
         _momId = params.momId;
         _canvas = params.canvas;
         _ctx = params.ctx;
-        _start_time = this.get("start_time");
-        _inners = (function(_tmp_inners, ACTOR, _momId, _start_time) {
+        _inners = (function(_tmp_inners, ACTOR, _momId, _start_time, end, duration) {
           var i, inn_i, inners;
           inners = {};
           for (i in _tmp_inners) {
@@ -114,15 +122,19 @@
             inn_i.id = _momId;
             inn_i.canvas = _canvas;
             inn_i.ctx = _ctx;
-            inn_i.start_time = _start_time;
+            inn_i.start_time = start_time;
+            inn_i.end_time = end_time;
+            inn_i.duration = duration;
+            life_cycle = Math.max(life_cycle, inn_i.imgsLen);
+            delete inn_i.imgsLen;
             inners[i] = new ACTOR(inn_i);
           }
           return inners;
-        })(_tmp_inners, params.ACTOR, _momId, _start_time);
-        this.unset("momId");
-        this.unset("canvas");
-        this.unset("ctx");
-        this.set({
+        })(_tmp_inners, params.ACTOR, _momId, start_time, end_time, duration);
+        action.unset("momId");
+        action.unset("canvas");
+        action.unset("ctx");
+        action.set({
           end_time: end_time,
           evts: evts,
           duration: duration,
@@ -154,7 +166,9 @@
           actor_id: actor.get("id"),
           img_id: img_id
         });
-        !!actor.get(mother) && (mother = actor.get(mother), x = mother.get("x"), y = mother.get("y"));
+        !!actor.get("mother") && (mother = actor.get("mother"), x = mother.get("x"), y = mother.get("y"));
+        x = x != null ? x : x = 0;
+        y = y != null ? y : y = 0;
         fn = function() {
           return actor.show_img({
             img: _img,
@@ -168,8 +182,8 @@
       idle: function(params) {
         var action, actor, cache;
         actor = params.actor;
-        cache = this.get("cache");
         action = this;
+        cache = action.get("cache");
         return action.show_img({
           img_id: cache.img_id,
           actor: actor
@@ -181,7 +195,7 @@
         _results = [];
         for (i in inners) {
           inn_i = inners[i];
-          _results.push(inn_i.set("animaTime", params.animaTime));
+          _results.push(inn_i.set(params));
         }
         return _results;
       }
