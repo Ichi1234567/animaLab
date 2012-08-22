@@ -49,7 +49,8 @@ define([
                     #console.log(arguments)
                     # 顯示這個action的目前的image
                     #console.log(params.dt)
-                    img_id = imgIds[~~(params.dt / speed)]
+                    #img_id = imgIds[~~(params.dt / speed)]
+                    img_id = if (imgs_num == 1) then imgIds[0] else imgIds[~~(params.dt / speed)]
                     act.set("cache", {
                         img_id: img_id
                     })
@@ -72,7 +73,7 @@ define([
                         act.set("count", count)
                         dt -= life_cycle
                     ))
-                    img_id = imgIds[~~(dt / speed)]
+                    img_id = if (imgs_num == 1) then imgIds[0] else imgIds[~~(dt / speed)]
                     act.set("cache", {
                         img_id: img_id
                     })
@@ -86,37 +87,42 @@ define([
                     actor
                 finish: (actor, act, e, params) ->
                     # 顯示這個action的目前的image
-                    times = act.get("times")
-                    count = act.get("count")
-                    duration = act.get("duration")
-                    dt = params.dt
-                    (dt - life_cycle >= 0 && (
-                        count++
-                        act.set("count", count)
-                        dt -= life_cycle
-                    ))
+                    isFinish = !(~~params.isInRect)
+                    if !isFinish
+                        times = act.get("times")
+                        count = act.get("count")
+                        duration = act.get("duration")
+                        dt = params.dt
+                        (dt - life_cycle >= 0 && (
+                            count++
+                            act.set("count", count)
+                            dt -= life_cycle
+                        ))
                     
 
-                    isFinish = !(~~params.isInRect)
-                    (times && count >= times && (
-                        isFinish = true
-                    ))
-                    (duration && (life_cycle * count + dt) >= duration && (
-                        isFinish = true
-                    ))
+                        (times && count >= times && (
+                            isFinish = true
+                        ))
+                        (duration && (life_cycle * count + dt) >= duration && (
+                            isFinish = true
+                        ))
                     # position check
 
                     if (isFinish)
-                        #console.log("--- finishi ---")
+                        #console.log("--- finish ---")
                         tmp.finish(actor, e, params)
                         act.set("count", 0)
                         actor.set({
                             animaFlag: false
                             #animaTime: -1
                         })
+                        inners = act.get("inners")
+                        for i, inn_i of inners
+                            inn_i.stopAnima()
                     else
                         #console.log("--- continue ---")
-                        img_id = imgIds[~~(dt / speed)]
+                        #img_id = imgIds[~~(dt / speed)]
+                        img_id = if (imgs_num == 1) then imgIds[0] else imgIds[~~(dt / speed)]
                         act.set("cache", {
                             img_id: img_id
                         })
@@ -135,17 +141,20 @@ define([
             _momId = params.momId
             _canvas = params.canvas
             _ctx = params.ctx
-            _start_time = action.get("start_time")
-            _inners = ((_tmp_inners, ACTOR, _momId, _start_time) ->
+            _inners = ((_tmp_inners, ACTOR, _momId, _start_time, end, duration) ->
                 inners = {}
                 for i, inn_i of _tmp_inners
                     inn_i.id = _momId
                     inn_i.canvas = _canvas
                     inn_i.ctx = _ctx
-                    inn_i.start_time = _start_time
+                    inn_i.start_time = start_time
+                    inn_i.end_time = end_time
+                    inn_i.duration = duration
+                    life_cycle = Math.max(life_cycle, inn_i.imgsLen)
+                    delete inn_i.imgsLen
                     inners[i] = new ACTOR(inn_i)
                 inners
-            )(_tmp_inners, params.ACTOR, _momId, _start_time)
+            )(_tmp_inners, params.ACTOR, _momId, start_time, end_time, duration)
             #console.log (_inners)
             #inner def end
             action.unset("momId")
@@ -208,9 +217,11 @@ define([
                 actor: actor
             })
         updateInners: (params) ->
+            #console.log "inner"
             inners = @get("inners")
             for i, inn_i of inners
-                inn_i.set("animaTime", params.animaTime)
+                #inn_i.set("animaTime", params.animaTime)
+                inn_i.set(params)
             
     })
 )

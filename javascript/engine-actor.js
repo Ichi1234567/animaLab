@@ -75,22 +75,34 @@
         return this;
       },
       anima: function(params) {
-        var actor, start_time, _act;
+        var actor, start_time, _act, _opts;
         actor = this;
         actor.set("animaFlag", false);
         actor.set_status(params);
         _act = actor.get("acts")[params.actId];
         _act.set(params);
-        _act.updateInners({
+        _opts = {
           animaTime: actor.get("animaTime")
-        });
+        };
+        if (params.times) _opts.times = params.times;
+        _act.updateInners(_opts);
         start_time = _act.get("start_time");
         !!params.cb && params.cb(actor);
-        !start_time && actor.tick(0);
+        return this;
+      },
+      stopAnima: function(params) {
+        var actor, _act;
+        actor = this;
+        _act = actor.get("acts")[actor.get("curr_st")];
+        _act.trigger("finish", {
+          e: "finish",
+          actor: actor,
+          isInRect: false
+        });
         return this;
       },
       chkIdle: function(time) {
-        var actor, dt, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle, _prev_st;
+        var actor, count, dt, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle, _prev_st;
         actor = this;
         _animaFlag = actor.get("animaFlag");
         _curr_st = actor.get("curr_st");
@@ -102,7 +114,8 @@
         _cycle_time = _life_cycle * _act.get("count");
         speed = _act.get("speed");
         dt = time - _animaTime - _cycle_time;
-        return (_animaFlag && ((!!(dt % speed) && !_animaTime) || _life_cycle === 1)) || (!_animaFlag && (_curr_st === _prev_st && time > _act_start_time + _animaTime));
+        count = _act.get("count");
+        return (_animaFlag && ((!!(dt % speed) && !_animaTime) || _life_cycle === 1) && dt !== _life_cycle) || (!_animaFlag && (_curr_st === _prev_st && time > _act_start_time + _animaTime));
       },
       tick: function(time) {
         var actor, canvas, dt, isInRect, speed, _act, _act_start_time, _animaFlag, _animaTime, _curr_st, _cycle_time, _life_cycle;
@@ -128,7 +141,7 @@
         }));
         if (_animaFlag && time >= _animaTime) {
           dt = time - _animaTime - _cycle_time;
-          if (_life_cycle > 1 && !(dt % speed)) {
+          if (!(dt % speed)) {
             canvas = actor.get("canvas");
             isInRect = E_PAINT.chkInRect({
               cw: canvas.width,

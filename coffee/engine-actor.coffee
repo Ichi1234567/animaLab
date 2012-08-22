@@ -78,13 +78,26 @@ define([
             #console.log _act.get("start_time")
             #console.log _act
             _act.set(params)
-            _act.updateInners({
+            _opts = {
                 animaTime: actor.get("animaTime")
-            })
+            }
+            if params.times then _opts.times = params.times
+            _act.updateInners(_opts)
             start_time = _act.get("start_time")
             (!!params.cb && params.cb(actor))
-            (!start_time && actor.tick(0))
+            #(!start_time && actor.tick(0))
             @
+        stopAnima: (params) ->
+            actor = @
+            _act = actor.get("acts")[actor.get("curr_st")]
+            _act.trigger("finish", {
+                e: "finish"
+                actor: actor
+                isInRect: false
+            })
+            #E_PAINT.scene_pool.pop(scene)
+            @
+
         chkIdle: (time) ->
             actor = @
             _animaFlag = actor.get("animaFlag")
@@ -97,7 +110,11 @@ define([
             _cycle_time = _life_cycle * _act.get("count")
             speed = _act.get("speed")
             dt = time - _animaTime - _cycle_time
+            count = _act.get("count")
             #console.log("---------------------------")
+            #if _curr_st != "walk"
+            #    console.log _curr_st
+            #    console.log _animaFlag && ((!!(dt%speed) && !_animaTime) || _life_cycle is 1) && dt != _life_cycle
             #console.log !!dt%speed
             #console.log !_animaTime
             #console.log _life_cycle
@@ -105,7 +122,7 @@ define([
             #console.log(_prev_st)
             #console.log(actor.previous())
             #console.log _animaFlag && _curr_st == _prev_st
-            (_animaFlag && ((!!(dt%speed) && !_animaTime) || _life_cycle is 1)) ||
+            (_animaFlag && ((!!(dt%speed) && !_animaTime) || _life_cycle is 1) && dt != _life_cycle) ||
             (!_animaFlag && (_curr_st == _prev_st && time > _act_start_time + _animaTime))
 
         tick: (time) ->
@@ -148,7 +165,7 @@ define([
             ))
             if (_animaFlag && time >= _animaTime)
                 dt = time - _animaTime - _cycle_time
-                if (_life_cycle > 1 && !(dt%speed))
+                if (!(dt%speed))
                     canvas = actor.get("canvas")
                     isInRect = E_PAINT.chkInRect({
                         cw: canvas.width
@@ -200,7 +217,7 @@ define([
         find: (elm_name) ->
             _curr_st = @get("curr_st")
             _act = @get("acts")[_curr_st]
-            #console.log _act.get("inners")[elm_name]
+            #console.log _act.get("inners")[elm_name].get("times")
             _act.get("inners")[elm_name]
 
         transform: (params) ->

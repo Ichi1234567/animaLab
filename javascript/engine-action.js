@@ -27,7 +27,7 @@
         return this;
       },
       valid_input: function(params) {
-        var action, duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _start_time, _tmp_inners;
+        var action, duration, end_time, evts, imgIds, imgs_num, life_cycle, speed, start_time, tmp, _canvas, _ctx, _inners, _momId, _ref, _ref2, _tmp_inners;
         action = this;
         start_time = action.get("start_time");
         end_time = (action.get("end_time")) || start_time + (action.get("duration") || 0);
@@ -43,7 +43,7 @@
         evts = {
           init: function(actor, act, e, params) {
             var fn, img_id;
-            img_id = imgIds[~~(params.dt / speed)];
+            img_id = imgs_num === 1 ? imgIds[0] : imgIds[~~(params.dt / speed)];
             act.set("cache", {
               img_id: img_id
             });
@@ -60,7 +60,7 @@
             dt = params.dt;
             count = act.get("count");
             dt - life_cycle >= 0 && (count++, act.set("count", count), dt -= life_cycle);
-            img_id = imgIds[~~(dt / speed)];
+            img_id = imgs_num === 1 ? imgIds[0] : imgIds[~~(dt / speed)];
             act.set("cache", {
               img_id: img_id
             });
@@ -73,23 +73,30 @@
             return actor;
           },
           finish: function(actor, act, e, params) {
-            var count, dt, fn, img_id, isFinish, times;
-            times = act.get("times");
-            count = act.get("count");
-            duration = act.get("duration");
-            dt = params.dt;
-            dt - life_cycle >= 0 && (count++, act.set("count", count), dt -= life_cycle);
+            var count, dt, fn, i, img_id, inn_i, inners, isFinish, times;
             isFinish = !(~~params.isInRect);
-            times && count >= times && (isFinish = true);
-            duration && (life_cycle * count + dt) >= duration && (isFinish = true);
+            if (!isFinish) {
+              times = act.get("times");
+              count = act.get("count");
+              duration = act.get("duration");
+              dt = params.dt;
+              dt - life_cycle >= 0 && (count++, act.set("count", count), dt -= life_cycle);
+              times && count >= times && (isFinish = true);
+              duration && (life_cycle * count + dt) >= duration && (isFinish = true);
+            }
             if (isFinish) {
               tmp.finish(actor, e, params);
               act.set("count", 0);
               actor.set({
                 animaFlag: false
               });
+              inners = act.get("inners");
+              for (i in inners) {
+                inn_i = inners[i];
+                inn_i.stopAnima();
+              }
             } else {
-              img_id = imgIds[~~(dt / speed)];
+              img_id = imgs_num === 1 ? imgIds[0] : imgIds[~~(dt / speed)];
               act.set("cache", {
                 img_id: img_id
               });
@@ -107,8 +114,7 @@
         _momId = params.momId;
         _canvas = params.canvas;
         _ctx = params.ctx;
-        _start_time = action.get("start_time");
-        _inners = (function(_tmp_inners, ACTOR, _momId, _start_time) {
+        _inners = (function(_tmp_inners, ACTOR, _momId, _start_time, end, duration) {
           var i, inn_i, inners;
           inners = {};
           for (i in _tmp_inners) {
@@ -116,11 +122,15 @@
             inn_i.id = _momId;
             inn_i.canvas = _canvas;
             inn_i.ctx = _ctx;
-            inn_i.start_time = _start_time;
+            inn_i.start_time = start_time;
+            inn_i.end_time = end_time;
+            inn_i.duration = duration;
+            life_cycle = Math.max(life_cycle, inn_i.imgsLen);
+            delete inn_i.imgsLen;
             inners[i] = new ACTOR(inn_i);
           }
           return inners;
-        })(_tmp_inners, params.ACTOR, _momId, _start_time);
+        })(_tmp_inners, params.ACTOR, _momId, start_time, end_time, duration);
         action.unset("momId");
         action.unset("canvas");
         action.unset("ctx");
@@ -185,7 +195,7 @@
         _results = [];
         for (i in inners) {
           inn_i = inners[i];
-          _results.push(inn_i.set("animaTime", params.animaTime));
+          _results.push(inn_i.set(params));
         }
         return _results;
       }
